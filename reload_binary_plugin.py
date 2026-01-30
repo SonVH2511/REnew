@@ -57,6 +57,9 @@ class ReloadBinaryHandler(ida_kernwin.action_handler_t):
                 print("[Reload] Cancelled by user")
                 return 1
 
+            # Auto-reload without confirmation
+            print("[Reload] Auto-reload enabled - no confirmation needed")
+
             # Get the IDB path to delete it
             idb_path = ida_loader.get_path(ida_loader.PATH_TYPE_IDB)
             
@@ -66,23 +69,34 @@ class ReloadBinaryHandler(ida_kernwin.action_handler_t):
             # Delete the old IDB files in a batch script that will run after IDA closes
             if idb_path:
                 try:
-                    base_path = os.path.splitext(idb_path)[0]
+                    # Get base path for both current IDB and the binary's potential IDB
+                    current_idb_base = os.path.splitext(idb_path)[0]
+                    binary_idb_base = os.path.splitext(input_path)[0]
                     
                     # Create a batch file to delete IDB and reopen IDA
-                    batch_path = base_path + "_reload.bat"
+                    batch_path = current_idb_base + "_reload.bat"
                     with open(batch_path, 'w') as f:
                         f.write('@echo off\n')
                         f.write('timeout /t 1 /nobreak >nul\n')
                         
-                        # Delete old IDB files
+                        # Delete old IDB files from current location
                         extensions = ['.id0', '.id1', '.id2', '.nam', '.til', '.i64']
                         for ext in extensions:
-                            file_to_delete = base_path + ext
+                            file_to_delete = current_idb_base + ext
                             if os.path.exists(file_to_delete):
-                                f.write(f'del /F /Q "{file_to_delete}"\n')
+                                f.write(f'del /F /Q "{file_to_delete}" 2>nul\n')
                         
-                        # Reopen IDA with the binary
-                        f.write(f'start "" "{ida_exe}" "{input_path}"\n')
+                        # Also delete from binary location if different
+                        if current_idb_base != binary_idb_base:
+                            for ext in extensions:
+                                file_to_delete = binary_idb_base + ext
+                                f.write(f'del /F /Q "{file_to_delete}" 2>nul\n')
+                        
+                        # Reopen IDA with auto-analysis flags
+                        # -A: Automatic mode (non-interactive)
+                        # -c: Disassemble new file (don't load database)
+                        # -P+: Apply DWARF debug info automatically
+                        f.write(f'start "" "{ida_exe}" -A -c "{input_path}"\n')
                         
                         # Delete the batch file itself
                         f.write(f'del /F /Q "{batch_path}"\n')
