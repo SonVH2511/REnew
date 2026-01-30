@@ -1,6 +1,9 @@
 ### REnew
 
 An IDA plugin that automate reload your current binary, don't need to close file and reopen ida...Maybe more convenient :))
+Thanks to Codpilot, who helped realize my idea.
+
+
 ### Requirement
 
 Work on 9.0+ version
