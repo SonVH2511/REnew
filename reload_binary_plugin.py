@@ -57,8 +57,7 @@ class ReloadBinaryHandler(ida_kernwin.action_handler_t):
                 print("[Reload] Cancelled by user")
                 return 1
 
-            # Auto-reload without confirmation
-            print("[Reload] Auto-reload enabled - no confirmation needed")
+            print("[Reload] User confirmed - proceeding with reload")
 
             # Get the IDB path to delete it
             idb_path = ida_loader.get_path(ida_loader.PATH_TYPE_IDB)
@@ -92,11 +91,8 @@ class ReloadBinaryHandler(ida_kernwin.action_handler_t):
                                 file_to_delete = binary_idb_base + ext
                                 f.write(f'del /F /Q "{file_to_delete}" 2>nul\n')
                         
-                        # Reopen IDA with auto-analysis flags
-                        # -A: Automatic mode (non-interactive)
-                        # -c: Disassemble new file (don't load database)
-                        # -P+: Apply DWARF debug info automatically
-                        f.write(f'start "" "{ida_exe}" -A -c "{input_path}"\n')
+                        # Reopen IDA normally (no -A flag)
+                        f.write(f'start "" "{ida_exe}" "{input_path}"\n')
                         
                         # Delete the batch file itself
                         f.write(f'del /F /Q "{batch_path}"\n')
