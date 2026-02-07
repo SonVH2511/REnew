@@ -1,6 +1,6 @@
 ### REnew
 
-An IDA plugin that automate reload your current binary, don't need to close file and reopen ida...Maybe more convenient :))
+An stupid IDA plugin that automate reload your current binary, don't need to close file and reopen ida...Maybe more convenient :))
 
 ### Requirement
 
